@@ -14,6 +14,9 @@ app.listen(process.env.PORT, () => { // this will listen to the port defined in 
     console.log('Server is running on http://localhost:' + process.env.PORT);
 });
 
+// Importing routes
 const authRoutes = require('./routes/authRoutes'); // imports the authRoutes from routes/authRoutes.js
-
 app.use('/api/auth', authRoutes); // using the authRoutes for the /api/auth endpoint
+
+const projectRoutes = require('./routes/projectRoutes');
+app.use('/api/projects', projectRoutes);
