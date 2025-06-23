@@ -20,3 +20,6 @@ app.use('/api/auth', authRoutes); // using the authRoutes for the /api/auth endp
 
 const projectRoutes = require('./routes/projectRoutes');
 app.use('/api/projects', projectRoutes);
+
+const taskRoutes = require('./routes/taskRoutes');
+app.use('/api/task', taskRoutes);

@@ -10,6 +10,3 @@ router.post('/invite', authenticateToken, shareProject); // endpoint to share pr
 router.put('', authenticateToken, editProject); // endpoint to put projects 
 router.put('/status', authenticateToken, changeStatus); // endpoint to put projects status 
 router.delete('', authenticateToken, removeProject); // endpoint to delete projects 
-
-
-module.exports = router; // exports the router so it can be used in other files

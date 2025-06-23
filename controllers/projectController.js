@@ -37,7 +37,7 @@ const shareProject = (req, res) => { // function to invite other people to the p
     });
 };
 
-const editProject = (req, res) => { // function to create a new project
+const editProject = (req, res) => { // function to edit project
     const { project_id, name, description, finished_date, priority } = req.body; // structure of the request body
 
     updateProject(project_id, name, description, finished_date, priority, (err) => { // calling the model function to update project
@@ -47,7 +47,7 @@ const editProject = (req, res) => { // function to create a new project
     });
 };
 
-const changeStatus = (req, res) => { // function to create a new project
+const changeStatus = (req, res) => { // function to change status of a project
     const { project_id, status } = req.body; // structure of the request body
 
     updateStatus(project_id, status, (err) => { // calling the model function to update project
