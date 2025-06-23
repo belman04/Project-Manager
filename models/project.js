@@ -5,4 +5,62 @@ const getProjectsByUser = (user_id, callback) => { // function to get user's pro
     db.query(select_query, [user_id], callback);
 };
 
-module.exports = { getProjectsByUser }; // exports the queries to be used in other files
+const createProject = (user_id, name, description, finished_date, priority, callback) => { // function to create a new project
+    const insert_project = 'INSERT INTO project (name, description, finished_date, priority) VALUES (?, ?, ?, ?)';
+    db.query(insert_project, [name, description, finished_date, priority], (err, result) => {
+
+        if (err) return callback(err);
+
+        const project_id = result.insertId; // get the id of the newly created project
+        const insert_user_project = 'INSERT INTO user_project (fk_user_id, fk_project_id, is_admin) VALUES (?, ?, 1)';
+        db.query(insert_user_project, [user_id, project_id], callback);
+    });
+};
+
+const addUserToProject = (user_id, project_id, callback) => { // function to create a new project
+    const insert_project = 'INSERT INTO user_project (fk_user_id, fk_project_id) VALUES (?, ?)';
+    db.query(insert_project, [user_id, project_id], callback);;
+};
+
+const updateProject = (project_id, name, description, finished_date, priority, callback) => { // function to update a project
+    const fields = [];
+    const values = [];
+    // first we check which fields are provided to update
+    if (name !== undefined){ // if name is provided we add it to the fields and values arrays
+        fields.push('name = ?');
+        values.push(name);
+    }
+    if (description !== undefined){
+        fields.push('description = ?');
+        values.push(description);
+    }    
+    if (finished_date !== undefined){
+        fields.push('finished_date = ?');
+        values.push(finished_date);
+    }   
+    if (priority !== undefined){
+        fields.push('priority = ?');
+        values.push(priority);
+    }   
+
+    if (fields.length === 0) { // if there are fields provided to update we return an error
+        return callback(new Error('No fields to update'));
+    }
+
+    const update_project = `UPDATE project SET ${fields.join(", ")} WHERE project_id = ?`;
+    values.push(project_id);
+
+    db.query(update_project, values, callback);
+};
+
+const updateStatus = (project_id, status, callback) => { // function to change the status of a project
+    const update_status = 'UPDATE project SET status = ? WHERE project_id = ?';
+    db.query(update_status, [status, project_id], callback);
+};
+
+const deleteProject = (project_id, callback) => { // function to delete project
+    const delete_project = 'DELETE FROM project WHERE project_id = ?';
+    db.query(delete_project, [project_id], callback);
+};
+
+module.exports = { getProjectsByUser, createProject , addUserToProject , updateProject, updateStatus, deleteProject}; // exports the queries to be used in other files
