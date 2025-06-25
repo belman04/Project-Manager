@@ -1,4 +1,5 @@
 const { getTasksByProject, createTasks , addUserToTask , deleteUserFromTask , updateTask, updateStatus, deleteTask } = require('../models/task'); // imports task model functions
+const { createNotification } = require('../models/notification'); // imports notification model functions
 
 const taskList = (req, res) => { // function to list tasks for a project
     const { project_id } = req.body; // structure of the request body
@@ -31,7 +32,12 @@ const assignTask = (req, res) => { // function to assing task
     addUserToTask(user_id, task_id, (err) => { // calling the model function to assign task
         if(err) return res.status(500).json({ msg: 'Error assining user' });
 
-        res.status(201).json({ msg: 'User assing to task' });
+        const message = 'You have been assign to a task';
+        createNotification(user_id, null, task_id, message, 'task_assinged', (err) => { // using the notification model to create a new notification
+            if(err) return res.status(500).json({ msg: 'Error sending notification' });
+
+            res.status(201).json({ msg: 'User assing to task and notification send' });
+        });
     });
 };
 
@@ -41,7 +47,12 @@ const unassignTask = (req, res) => { // function to unassign user from task
     deleteUserFromTask(user_id, task_id, (err) => { // calling the model function to unassign user from task
         if(err) return res.status(500).json({ msg: 'Error unassigning user from task' });
 
-        res.status(201).json({ msg: 'User unassign from task' });
+        const message = 'You have been unassign from a task';
+        createNotification(user_id, null, task_id, message, 'task_unassigned', (err) => { // using the notification model to create a new notification
+            if(err) return res.status(500).json({ msg: 'Error sending notification' });
+                    
+            res.status(201).json({ msg: 'User unassign from task and notification send' });
+        });
     });
 };
 

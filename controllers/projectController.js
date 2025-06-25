@@ -1,4 +1,5 @@
 const { getProjectsByUser , createProject , addUserToProject, deleteUserFromProject, updateProject , updateStatus , deleteProject } = require('../models/project'); // imports project model functions
+const { createNotification } = require('../models/notification'); // imports notification model functions
 
 const projectsList = (req, res) => { // function to list projects for a user
     const user_id = req.user.id; // getting the user id from the request
@@ -27,24 +28,33 @@ const newProject = (req, res) => { // function to create a new project
 };
 
 const shareProject = (req, res) => { // function to invite other people to the project
-
     const { user_id, project_id } = req.body; // structure of the request body
 
     addUserToProject(user_id, project_id, (err) => { // calling the model function to add user to project
         if(err) return res.status(500).json({ msg: 'Error inviting user' });
 
-        res.status(201).json({ msg: 'User added to the project' });
+        const message = 'You have been invited to a project';
+        createNotification(user_id, project_id, null, message, 'invitation', (err) => { // using the notification model to create a new notification
+            if(err) return res.status(500).json({ msg: 'Error sending notification' });
+
+            res.status(201).json({ msg: 'User added to the project and notification send' });
+        });
+
     });
 };
 
 const uninviteProject = (req, res) => { // function to uninvite people from the project
-
     const { user_id, project_id } = req.body; // structure of the request body
 
     deleteUserFromProject(user_id, project_id, (err) => { // calling the model function to delete user from the project
         if(err) return res.status(500).json({ msg: 'Error uninviting user' });
 
-        res.status(201).json({ msg: 'User uninvited from the project' });
+        const message = 'You have been uninvited from a project';
+        createNotification(user_id, project_id, null, message, 'uninvited', (err) => { // using the notification model to create a new notification
+            if(err) return res.status(500).json({ msg: 'Error sending notification' });
+            
+            res.status(201).json({ msg: 'User uninvited from the project and notification send' });
+        });
     });
 };
 
