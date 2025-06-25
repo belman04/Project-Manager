@@ -1,7 +1,7 @@
 const db = require('../config/db'); // imports the database connection from config/db.js
 
 const getTasksByProject = (project_id, callback) => { // function to get project's tasks
-    const select_query = 'SELECT t.*, GROUP_CONCAT(ut.fk_user_id) AS assign_to FROM task t LEFT JOIN user_task ut ON t.task_id = ut.fk_task_id WHERE fk_project_id = ? GROUP BY t.task_id';
+    const select_query = "SELECT t.*, GROUP_CONCAT(DISTINCT ut.fk_user_id) AS assign_to, JSON_ARRAYAGG(JSON_OBJECT('image_id', i.image_id,'url', i.url,'public_id', i.public_id)) AS images FROM task t LEFT JOIN user_task ut ON t.task_id = ut.fk_task_id LEFT JOIN image i ON t.task_id = i.fk_task_id WHERE t.fk_project_id = ? GROUP BY t.task_id";
     db.query(select_query, [project_id], callback);
 };
 
@@ -51,6 +51,16 @@ const updateTask = (task_id, name, description, finished_date, priority, callbac
     db.query(update_task, values, callback);
 };
 
+const uploadTaskImg = (img_url, public_id, callback) => { // function to add image to a task
+    const insert_img = 'INSERT INTO image (fk_task_id, url, public_id) VALUES (?, ?, ?)';
+    db.query(insert_img, [task_id, img_url, public_id], callback);
+};
+
+const deleteTaskImg = (image_id, callback) => { // function to remove image from task
+    const delete_img = 'DELETE FROM image WHERE image_id = ?';
+    db.query(delete_img, [image_id], callback);
+};
+
 const updateStatus = (task_id, status, callback) => { // function to change the status of a task
     const update_status = 'UPDATE task SET status = ? WHERE task_id = ?';
     db.query(update_status, [status, task_id], callback);
@@ -61,4 +71,4 @@ const deleteTask = (task_id, callback) => { // function to delete project
     db.query(delete_task, [task_id], callback);
 };
 
-module.exports = { getTasksByProject, createTasks , addUserToTask , deleteUserFromTask, updateTask, updateStatus, deleteTask}; // exports the queries to be used in other files
+module.exports = { getTasksByProject, createTasks , addUserToTask , deleteUserFromTask, updateTask, uploadTaskImg , deleteTaskImg , updateStatus, deleteTask}; // exports the queries to be used in other files

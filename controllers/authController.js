@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs'); // to hash passwords
 const jwt = require('jsonwebtoken'); // to create JSON Web Tokens
-const { createUser, getUserByEmail} = require('../models/user'); // imports user model functions
+const { createUser , getUserByEmail } = require('../models/user'); // imports user model functions
 
 const register = (req, res) => { // function to register users
     const { first_name, last_name, email, password } = req.body; // structure of the request body
@@ -18,7 +18,7 @@ const register = (req, res) => { // function to register users
 
         const passwordHash = bcrypt.hashSync(password, 10); // hashing the password
 
-        createUser(first_name, last_name, email, passwordHash, (err, results) => {
+        createUser(first_name, last_name, email, passwordHash, (err) => {
             if(err) return res.status(500).json({ msg: 'Error creating user' });
 
             res.status(201).json({ msg: 'User created' });
@@ -50,8 +50,10 @@ const login = (req, res) => { // function to login
                 id: user.user_id, 
                 first_name: user.first_name, 
                 last_name: user.last_name, 
-                email: user.email}}); // sending the token and user data in the response
+                email: user.email,
+                profile_img: user.profile_img
+            }}); // sending the token and user data in the response
     });
 };
 
-module.exports = { register, login }; // exports the register and login functions so they can be used in other files
+module.exports = { register, login }; // exports functions so they can be used in other files

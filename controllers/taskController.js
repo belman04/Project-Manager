@@ -1,5 +1,6 @@
-const { getTasksByProject, createTasks , addUserToTask , deleteUserFromTask , updateTask, updateStatus, deleteTask } = require('../models/task'); // imports task model functions
+const { getTasksByProject, createTasks , addUserToTask , deleteUserFromTask , updateTask, uploadTaskImg , deleteTaskImg , updateStatus, deleteTask } = require('../models/task'); // imports task model functions
 const { createNotification } = require('../models/notification'); // imports notification model functions
+const { cloudinary } = require('../config/cloudinary');
 
 const taskList = (req, res) => { // function to list tasks for a project
     const { project_id } = req.body; // structure of the request body
@@ -66,6 +67,34 @@ const editTask = (req, res) => { // function to edit a task
     });
 };
 
+const addTaskImage = (req, res) => { // function to upload a task image
+    const { task_id } = req.body; // structure of the request body
+    const image_url = req.file.path; 
+    const public_id = req.file.filename; // getting the public id from the file name
+
+    if (!req.file) return res.status(400).json({ msg: 'No image provided' });
+
+    uploadTaskImg(task_id, image_url, public_id, (err) => { // calling the model function to add iamge to task
+        if(err) return res.status(500).json({ msg: 'Error adding image to task' });
+
+        res.status(201).json({ msg: 'Image task added' , url: image_url});
+    });
+};
+
+const removeTaskImage = (req, res) => { // function to remove a task image
+    const { image_id, public_id } = req.body; // structure of the request body
+
+    cloudinary.uploader.destroy(public_id, (err) => {
+        if (err) return res.status(500).json({ msg: 'Error deleting image from cloudinary' });
+
+        deleteTaskImg(image_id, (err) => { // calling the model function to add iamge to task
+            if(err) return res.status(500).json({ msg: 'Error deleting image from task' });
+
+            res.status(201).json({ msg: 'Image task deleted' });
+        });
+    });
+};
+
 const changeStatus = (req, res) => { // function to change status of a task
     const { task_id, status } = req.body; // structure of the request body
 
@@ -86,4 +115,4 @@ const removeTask = (req, res) => { // function to remove task
     });
 };
 
-module.exports = { taskList , newTask , assignTask , unassignTask, editTask , changeStatus, removeTask}; // exports functiona so they can be used in other files
+module.exports = { taskList , newTask , assignTask , unassignTask, editTask , addTaskImage , removeTaskImage , changeStatus, removeTask }; // exports functiona so they can be used in other files
