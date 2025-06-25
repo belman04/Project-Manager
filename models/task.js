@@ -1,18 +1,23 @@
 const db = require('../config/db'); // imports the database connection from config/db.js
 
 const getTasksByProject = (project_id, callback) => { // function to get project's tasks
-    const select_query = '  SELECT t.*, ut.fk_user_id AS assign_to FROM task t LEFT JOIN user_task ut ON t.task_id = ut.fk_task_id WHERE fk_project_id = ?';
+    const select_query = 'SELECT t.*, GROUP_CONCAT(ut.fk_user_id) AS assign_to FROM task t LEFT JOIN user_task ut ON t.task_id = ut.fk_task_id WHERE fk_project_id = ? GROUP BY t.task_id';
     db.query(select_query, [project_id], callback);
 };
 
-const createTasks = (name, description, finished_date, priority, callback) => { // function to create a new task
-    const insert_task = 'INSERT INTO task (name, description, finished_date, priority) VALUES (?, ?, ?, ?)';
-    db.query(insert_task, [name, description, finished_date, priority], callback); 
+const createTasks = (project_id, name, description, finished_date, priority, callback) => { // function to create a new task
+    const insert_task = 'INSERT INTO task (fk_project_id, name, description, finished_date, priority) VALUES (?, ?, ?, ?, ?)';
+    db.query(insert_task, [project_id, name, description, finished_date, priority], callback); 
 };
 
 const addUserToTask = (user_id, task_id, callback) => { // function to assing task
     const insert_user_task = 'INSERT INTO user_task (fk_user_id, fk_task_id) VALUES (?, ?)';
     db.query(insert_user_task, [user_id, task_id], callback);;
+};
+
+const deleteUserFromTask = (user_id, task_id, callback) => { // function to removome user from task
+    const delete_user_task = 'DELETE FROM user_task WHERE fk_user_id = ? AND fk_task_id = ?';
+    db.query(delete_user_task, [user_id, task_id], callback);;
 };
 
 const updateTask = (task_id, name, description, finished_date, priority, callback) => { // function to update a task
@@ -56,4 +61,4 @@ const deleteTask = (task_id, callback) => { // function to delete project
     db.query(delete_task, [task_id], callback);
 };
 
-module.exports = { getTasksByProject, createTasks , addUserToTask , updateTask, updateStatus, deleteTask}; // exports the queries to be used in other files
+module.exports = { getTasksByProject, createTasks , addUserToTask , deleteUserFromTask, updateTask, updateStatus, deleteTask}; // exports the queries to be used in other files

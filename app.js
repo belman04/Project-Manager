@@ -22,4 +22,7 @@ const projectRoutes = require('./routes/projectRoutes');
 app.use('/api/projects', projectRoutes);
 
 const taskRoutes = require('./routes/taskRoutes');
-app.use('/api/task', taskRoutes);
+app.use('/api/tasks', taskRoutes);
+
+const notificationRoutes = require('./routes/notificationRoutes');
+app.use('/api/notifications', notificationRoutes);

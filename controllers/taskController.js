@@ -1,4 +1,4 @@
-const { getTasksByProject, createTasks , addUserToTask , updateTask, updateStatus, deleteTask } = require('../models/task'); // imports task model functions
+const { getTasksByProject, createTasks , addUserToTask , deleteUserFromTask , updateTask, updateStatus, deleteTask } = require('../models/task'); // imports task model functions
 
 const taskList = (req, res) => { // function to list tasks for a project
     const { project_id } = req.body; // structure of the request body
@@ -12,13 +12,13 @@ const taskList = (req, res) => { // function to list tasks for a project
 };
 
 const newTask = (req, res) => { // function to create a new task
-    const { name, description, finished_date, priority } = req.body; // structure of the request body
+    const { project_id, name, description, finished_date, priority } = req.body; // structure of the request body
 
     if (!name) { // checking if the name is provided, it will be the only required field
         return res.status(400).json({ msg: 'To save the task provide a name' });
     }
 
-    createTasks(name, description, finished_date, priority, (err) => { // calling the model function to create a new task
+    createTasks(project_id, name, description, finished_date, priority, (err) => { // calling the model function to create a new task
         if(err) return res.status(500).json({ msg: 'Error creating task' });
 
         res.status(201).json({ msg: 'Task created' });
@@ -32,6 +32,16 @@ const assignTask = (req, res) => { // function to assing task
         if(err) return res.status(500).json({ msg: 'Error assining user' });
 
         res.status(201).json({ msg: 'User assing to task' });
+    });
+};
+
+const unassignTask = (req, res) => { // function to unassign user from task
+    const { user_id, task_id } = req.body; // structure of the request body
+
+    deleteUserFromTask(user_id, task_id, (err) => { // calling the model function to unassign user from task
+        if(err) return res.status(500).json({ msg: 'Error unassigning user from task' });
+
+        res.status(201).json({ msg: 'User unassign from task' });
     });
 };
 
@@ -65,4 +75,4 @@ const removeTask = (req, res) => { // function to remove task
     });
 };
 
-module.exports = { taskList , newTask , assignTask , editTask , changeStatus, removeTask}; // exports functiona so they can be used in other files
+module.exports = { taskList , newTask , assignTask , unassignTask, editTask , changeStatus, removeTask}; // exports functiona so they can be used in other files

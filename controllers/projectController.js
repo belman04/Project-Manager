@@ -1,4 +1,4 @@
-const { getProjectsByUser , createProject , addUserToProject, updateProject , updateStatus , deleteProject } = require('../models/project'); // imports project model functions
+const { getProjectsByUser , createProject , addUserToProject, deleteUserFromProject, updateProject , updateStatus , deleteProject } = require('../models/project'); // imports project model functions
 
 const projectsList = (req, res) => { // function to list projects for a user
     const user_id = req.user.id; // getting the user id from the request
@@ -37,6 +37,17 @@ const shareProject = (req, res) => { // function to invite other people to the p
     });
 };
 
+const uninviteProject = (req, res) => { // function to uninvite people from the project
+
+    const { user_id, project_id } = req.body; // structure of the request body
+
+    deleteUserFromProject(user_id, project_id, (err) => { // calling the model function to delete user from the project
+        if(err) return res.status(500).json({ msg: 'Error uninviting user' });
+
+        res.status(201).json({ msg: 'User uninvited from the project' });
+    });
+};
+
 const editProject = (req, res) => { // function to edit project
     const { project_id, name, description, finished_date, priority } = req.body; // structure of the request body
 
@@ -67,4 +78,4 @@ const removeProject = (req, res) => { // function to remove project
     });
 };
 
-module.exports = { projectsList , newProject , shareProject , editProject , changeStatus, removeProject}; // exports functiona so they can be used in other files
+module.exports = { projectsList , newProject , shareProject , uninviteProject, editProject , changeStatus, removeProject}; // exports functiona so they can be used in other files
