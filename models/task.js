@@ -1,7 +1,29 @@
 const db = require('../config/db'); // imports the database connection from config/db.js
 
 const getTasksByProject = (project_id, callback) => { // function to get project's tasks
-    const select_query = "SELECT t.*, GROUP_CONCAT(DISTINCT ut.fk_user_id) AS assign_to, JSON_ARRAYAGG(JSON_OBJECT('image_id', i.image_id,'url', i.url,'public_id', i.public_id)) AS images FROM task t LEFT JOIN user_task ut ON t.task_id = ut.fk_task_id LEFT JOIN image i ON t.task_id = i.fk_task_id WHERE t.fk_project_id = ? GROUP BY t.task_id";
+    const select_query = `
+    SELECT 
+      t.*,
+      (
+        SELECT JSON_ARRAYAGG(JSON_OBJECT('user_id', au.user_id, 'first_name', au.first_name, 'last_name', au.last_name))
+        FROM (
+          SELECT DISTINCT au.user_id, au.first_name, au.last_name
+          FROM user_task ut
+          JOIN app_user au ON ut.fk_user_id = au.user_id
+          WHERE ut.fk_task_id = t.task_id
+        ) au
+      ) AS assign_to,
+      (
+        SELECT JSON_ARRAYAGG(JSON_OBJECT('url', i.url, 'image_id', i.image_id, 'public_id', i.public_id))
+        FROM (
+          SELECT DISTINCT i.url, i.image_id, i.public_id
+          FROM image i
+          WHERE i.fk_task_id = t.task_id
+        ) i
+      ) AS images
+    FROM task t
+    WHERE t.fk_project_id = ?
+    `;
     db.query(select_query, [project_id], callback);
 };
 

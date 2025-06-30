@@ -1,7 +1,29 @@
 const db = require('../config/db'); // imports the database connection from config/db.js
 
 const getProjectsByUser = (user_id, callback) => { // function to get user's projects
-    const select_query = 'SELECT p.*, MAX(up.is_admin) AS is_admin, GROUP_CONCAT(up_all.fk_user_id) AS invited FROM project p LEFT JOIN user_project up ON p.project_id = up.fk_project_id AND up.fk_user_id = ? LEFT JOIN user_project up_all ON p.project_id = up_all.fk_project_id WHERE up.fk_user_id = ? GROUP BY p.project_id';
+    const select_query = `
+    SELECT 
+        p.*, 
+        MAX(up.is_admin) AS is_admin, 
+        (
+            SELECT JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'user_id', au.user_id, 
+                    'first_name', au.first_name, 
+                    'last_name', au.last_name)
+            )
+            FROM (
+            SELECT DISTINCT au.user_id, au.first_name, au.last_name
+            FROM user_project up1
+            JOIN app_user au ON up1.fk_user_id = au.user_id
+            WHERE up1.fk_project_id = p.project_id
+            ) au 
+        ) AS invited
+    FROM project p
+    LEFT JOIN user_project up ON p.project_id = up.fk_project_id
+    WHERE up.fk_user_id = ?
+    GROUP BY p.project_id;
+    `;
     db.query(select_query, [user_id, user_id], callback);
 };
 
